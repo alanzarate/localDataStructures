@@ -84,6 +84,10 @@ public class App
         tree.remove(150);
         tree.inorder();
         tree.print2();
+        tree.remove(110);
+        tree.print2();
+        System.out.println(tree.numberNodes());
+        System.out.println(tree.numberLeafs());
     }
     public static void testingTreeBynNonInt(){
         //MyBinaryTree<Integer> tree = new MyBinaryTree<>();

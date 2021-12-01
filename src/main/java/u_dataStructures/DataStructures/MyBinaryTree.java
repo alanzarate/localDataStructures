@@ -1,6 +1,12 @@
 package u_dataStructures.DataStructures;
 
  
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import u_dataStructures.Nodes.MyTreeNodeMore;
 
 public class MyBinaryTree <T extends Comparable<T>> {
@@ -25,7 +31,7 @@ public class MyBinaryTree <T extends Comparable<T>> {
 
 
     public void addingNode(T value, MyTreeNodeMore<T> father){
-        //if(value.compareTo(father.getObj()) != 0){
+        
             if(value.compareTo(father.getObj()) >0){
                 if(father.getRight() == null){
                     father.setRight(new MyTreeNodeMore<>(value));
@@ -33,13 +39,14 @@ public class MyBinaryTree <T extends Comparable<T>> {
                     addingNode(value, father.getRight());
                 }
             }else{
-                if(father.getLeft() == null){
-                    father.setLeft(new MyTreeNodeMore<>(value));
-                }else{
-                    addingNode(value, father.getLeft());
+                if(value.compareTo(father.getObj()) <0){
+                    if(father.getLeft() == null){
+                        father.setLeft(new MyTreeNodeMore<>(value));
+                    }else{
+                        addingNode(value, father.getLeft());
+                    }
                 }
             }
-        //}
         
     }
 
@@ -95,20 +102,20 @@ public class MyBinaryTree <T extends Comparable<T>> {
             inorder(node.getRight());
         }
     }
-    public void printLayers(){
-        this.printByLayers(root);
-    }
-    private void printByLayers(MyTreeNodeMore<T> node){
-        if(node !=null){
-            System.out.print(node.getObj());
-            printByLayers(node.getLeft());
-            printByLayers(node.getRight());
-            System.out.print(" ");
-        }
-    }
+    
     public void printInorderWithoutRecursion(){
         this.inorder2();
     }
+/*
+        1) Se crea un stack vacio
+        2) inicializamos del nodo current como el root
+        3) Push the current node to S and set current = current->left until current is NULL
+        4) If current is NULL and stack is not empty then 
+            a) Pop the top item from stack.
+            b) Print the popped item, set current = popped_item->right 
+            c) Go to step 3.
+        5) If current is NULL and stack is empty then we are done.
+        */
     private void inorder2(){
         if(root == null){
             return;
@@ -129,64 +136,44 @@ public class MyBinaryTree <T extends Comparable<T>> {
 
     }
     public void remove(T data){
-        root = remover2( root, data);
+        root = removerByNodes( root, data);
     }
-    // private MyTreeNodeMore<T> remover(T data, MyTreeNodeMore<T> father){
-    //     if(father == null){
-    //         return father;
-    //     }
-
-    //     if( data.compareTo(father.getObj()) < 0 ){
-    //         father.setLeft(remover(data, father.getLeft()));
-    //     }else if (data.compareTo(father.getObj()) > 0){
-    //         father.setRight(remover(data, father.getRight()));
-    //     }else{
-    //         if(father.getLeft() == null){
-    //             return father.getRight();
-    //         }else if (father.getRight() == null){
-    //             return father.getLeft();
-    //         }
-    //         father.setObj(minValue(father.getRight()));
-
-    //         father.setRight(remover(father.getObj(), father.getRight()));
-
-    //     }
-    // }
-    public MyTreeNodeMore<T> remover2(MyTreeNodeMore<T> current, T deleted){
-        if(current == null)
+    
+    private MyTreeNodeMore<T> removerByNodes(MyTreeNodeMore<T> current, T deleted){
+        if(current == null){
             return current;
+        }
         
-        if(current.getObj().compareTo(deleted) > 0){
-            current.setLeft(remover2(current.getLeft(), deleted));
+        if(deleted.compareTo(current.getObj())  < 0){
+            current.setLeft(removerByNodes(current.getLeft(), deleted));
             return current;
-        }
-        else if (current.getObj().compareTo(deleted) <0){
-            current.setRight(remover2(current.getRight(), deleted));
-            return current;
-        }
-        // node Deleted
-        if(current.getLeft() == null){
-            MyTreeNodeMore<T> aux = current.getRight();
-            return aux;
-        }else if(current.getRight() == null){
-            MyTreeNodeMore<T> aux = current.getLeft();
-            return aux;
-        }
-        // dos ratas abajo
-        else{
-            MyTreeNodeMore<T> father = current;
-            MyTreeNodeMore<T> son = current.getRight();
-            while(son.getLeft() != null){
-                father = son;
-                son = son.getLeft();
+        }else{
+            if(deleted.compareTo(current.getObj()) > 0){
+                current.setRight(removerByNodes(current.getRight(), deleted));
+                return current;
             }
-            if(father != current)
-                father.setLeft(son.getRight());
-            else
-                father.setRight(son.getRight());
-
-            current.setObj(son.getObj());
-            return current;
+        }
+        if(current.getLeft() == null){
+            return current.getRight();
+        }else{ 
+            if(current.getRight() == null){  
+                return current.getLeft();
+            }else{
+                MyTreeNodeMore<T> father = current;
+                MyTreeNodeMore<T> son = current.getRight();
+                while(son.getLeft() != null){
+                    father = son;
+                    son = son.getLeft();
+                }
+                if(father != current){
+                    father.setLeft(son.getRight());
+                }else{
+                    father.setRight(son.getRight());
+                }
+                son.setRight(current.getRight());
+                son.setLeft(current.getLeft());
+                return son;
+            }
         }
     }
     public T minValue(MyTreeNodeMore<T> father){
@@ -197,20 +184,105 @@ public class MyBinaryTree <T extends Comparable<T>> {
         }
         return value;
     }
-    public void print2(){
-        this.print22(root, 0);
+    public T maxValue(MyTreeNodeMore<T> father){
+        T value = father.getObj();
+        while(father.getRight() != null){
+            value  = father.getRight().getObj();
+            father = father.getRight();
+        }
+        return value;
     }
-    private void print22(MyTreeNodeMore<T> current, int spaces){
+    public void print2(){
+        this.printHorizontaly(root, 0);
+    }
+    private void printHorizontaly(MyTreeNodeMore<T> current, int spaces){
         if(current == null)
             return;
         spaces += 10;
-        print22(current.getRight(), spaces);
+        printHorizontaly(current.getRight(), spaces);
         System.out.print("\n");
         for(int i = 10; i< spaces; i++)
             System.out.print(" ");
         System.out.print(current.getObj() + "\n");
-        print22(current.getLeft(), spaces);
+        printHorizontaly(current.getLeft(), spaces);
     }
 
+    public int numberNodes(){
+        return this.counterNodes(root);
+    }
+    private int counterNodes(MyTreeNodeMore<T> current){
+        int counter = 1;
+        
+        if (current.getLeft() != null){
+            counter += counterNodes(current.getLeft());
+        }
+
+        if(current.getRight() != null){
+            counter += counterNodes(current.getRight());
+        }
+
+        return counter;
+    }
+
+    public int numberLeafs(){
+        return this.counterLeafs(root);
+    }
+    private int counterLeafs(MyTreeNodeMore<T> current){
+        int counter = 0;
+        if(current.getLeft() == null && current.getRight() == null){
+            counter++;
+        }
+        if(current.getLeft() != null){
+            counter += counterLeafs(current.getLeft());
+        }
+
+        if(current.getRight() != null){
+            counter += counterLeafs(current.getRight());
+        }
+        return counter;
+    }
+
+    public int height(){
+        return this.height(root);
+    }
+    private int height(MyTreeNodeMore<T> current){
+        if(current == null){
+            return -1;
+        }else{
+            int left_t = height(current.getLeft());
+            int right_t = height(current.getRight());
+            if(left_t > right_t){
+                return left_t + 1;
+            }else{
+                return right_t + 1;
+            }
+        }
+    }
+    public void printLevels(){
+        this.levelOrder(root);
+    }
+    private void levelOrder(MyTreeNodeMore<T> current){
+        // Mapear lo niveles
+        Map<Integer, List<T>> map = new HashMap<>();
+
+        preorderForLevel(current, 1, map);
+
+        for (int i = 1; i <= map.size(); i++) {
+            System.out.println("Nivel " + i + ": " + map.get(i));
+        }
+    }
+    private void preorderForLevel(MyTreeNodeMore<T> root, int level, Map<Integer, List<T>> map)
+    {
+
+        if (root == null) {
+            return;
+        }
+        // ponemos el nivel y la lista inicializado para los valores del nivel 
+        map.putIfAbsent(level, new ArrayList<>());
+        map.get(level).add(root.getObj());
+
+        preorderForLevel(root.getLeft(), level + 1, map);
+        preorderForLevel(root.getRight(), level + 1, map);
+    }
     
 }
